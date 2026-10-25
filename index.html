@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070a12">
+<meta name="description" content="JARVIS — دستیار هوشمند نسل آینده">
+<title>JARVIS — Intelligence System</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap');
+
+:root{
+  --bg:#070a12;--panel:rgba(15,23,40,.78);
+  --panel2:#10192a;--line:rgba(98,221,255,.14);
+  --cyan:#57e7ff;--blue:#438aff;--purple:#a78bfa;
+  --text:#edf7ff;--muted:#8293aa;--green:#60f5c1;
+  --danger:#ff6b8a;--radius:20px;
+  --glow:0 0 36px rgba(48,192,255,.12);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;min-height:100dvh;color:var(--text);
+  background:
+    radial-gradient(ellipse at 50% -20%,#15354b 0,transparent 50%),
+    radial-gradient(ellipse at 100% 80%,#211339 0,transparent 38%),var(--bg);
+  font-family:Vazirmatn,system-ui,sans-serif;
+  overflow-x:hidden;
+}
+body:before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.14;
+  background-image:linear-gradient(rgba(87,231,255,.07) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(87,231,255,.07) 1px,transparent 1px);
+  background-size:42px 42px;
+  mask-image:linear-gradient(to bottom,#000,transparent 90%);
+}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer;color:inherit}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{
+  outline:2px solid var(--cyan);outline-offset:3px
+}
+.app{position:relative;display:grid;grid-template-columns:265px minmax(0,1fr);min-height:100dvh}
+.sidebar{
+  position:sticky;top:0;height:100dvh;padding:22px 16px;
+  border-left:1px solid var(--line);background:rgba(7,11,20,.82);
+  backdrop-filter:blur(22px);display:flex;flex-direction:column;gap:22px;z-index:5
+}
+.brand{display:flex;align-items:center;gap:11px;padding:5px 8px}
+.brand-icon{
+  width:44px;height:44px;border:1px solid #4bdcfb66;border-radius:15px;
+  display:grid;place-items:center;color:var(--cyan);font-size:23px;
+  background:linear-gradient(145deg,#15374b,#101326);
+  box-shadow:0 0 24px #35cfff25
+}
+.brand h1{font-size:20px;letter-spacing:4px;margin:0;font-weight:800}
+.brand small{display:block;color:var(--muted);font-size:9px;letter-spacing:2px}
+.btn{
+  border:1px solid var(--line);border-radius:13px;padding:11px 13px;
+  background:rgba(22,35,55,.66);transition:.22s;display:flex;
+  align-items:center;justify-content:center;gap:9px
+}
+.btn:hover{border-color:#57e7ff77;background:#183046;transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(110deg,#13698a,#334d9a);border-color:#60e6ff66}
+.btn.danger{color:var(--danger)}
+.nav-title{color:#627891;font-size:10px;letter-spacing:1px;padding:0 10px}
+.nav{display:grid;gap:7px}
+.nav button{justify-content:flex-start;background:transparent;border-color:transparent;color:#9bacbf}
+.nav button.active,.nav button:hover{color:var(--cyan);background:#12263a;border-color:#42cfff24}
+.sidebar-bottom{margin-top:auto;display:grid;gap:10px}
+.profile{border:1px solid var(--line);border-radius:15px;padding:12px;display:flex;gap:10px;align-items:center}
+.avatar{width:38px;height:38px;flex-shrink:0;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,#135c7a,#6b3a96)}
+.profile strong{font-size:12px;display:block}
+.profile small{font-size:10px;color:var(--muted)}
+.main{min-width:0;padding:20px clamp(12px,3vw,38px) 26px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+.status{font-size:11px;color:var(--green);display:flex;align-items:center;gap:8px}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green);animation:pulse 2s infinite}
+.top-actions{display:flex;gap:8px}
+.icon-btn{width:42px;height:42px;padding:0;font-size:18px}
+.page{display:none;animation:appear .3s ease}
+.page.active{display:block}
+.hero{text-align:center;padding:8px 0 10px}
+.eyebrow{color:var(--cyan);font-size:10px;letter-spacing:3px}
+.core-wrap{height:210px;display:grid;place-items:center;position:relative;margin:2px auto 6px}
+.core{position:relative;width:142px;height:142px;border-radius:50%;display:grid;place-items:center}
+.core:before,.core:after{content:"";position:absolute;inset:-14px;border:1px solid #57e7ff52;border-radius:50%;animation:spin 12s linear infinite}
+.core:after{inset:-27px;border-color:#a78bfa40;border-style:dashed;animation:spin 22s linear infinite reverse}
+.core svg{width:100%;height:100%;filter:drop-shadow(0 0 20px #38cfff70)}
+.core-letter{position:absolute;font-size:36px;font-weight:300;color:#d7faff;text-shadow:0 0 24px #57e7ff}
+.core-ring{position:absolute;width:190px;height:190px;border-radius:50%;border:1px solid #57e7ff12;box-shadow:inset 0 0 40px #328bff0b}
+.hero h2{font-size:clamp(28px,5vw,43px);letter-spacing:8px;margin:3px 0 4px;text-shadow:0 0 28px #57e7ff26}
+.hero p{font-size:12px;color:var(--muted);margin:0}
+.chips{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:22px 0}
+.chip{font-size:11px;border:1px solid var(--line);background:#0c1625bd;padding:9px 13px;border-radius:12px;color:#bed4e7}
+.chip:hover{border-color:#57e7ff77;color:var(--cyan)}
+.chat-panel{max-width:920px;margin:0 auto;border:1px solid var(--line);border-radius:22px;background:linear-gradient(150deg,#101a2bcf,#0a101dcf);box-shadow:var(--glow);overflow:hidden}
+.chat-head{padding:14px 17px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.chat-head strong{font-size:12px}.chat-head small{color:var(--muted);font-size:10px}
+.messages{min-height:145px;max-height:43dvh;overflow-y:auto;padding:17px;display:flex;flex-direction:column;gap:15px;scroll-behavior:smooth}
+.empty{text-align:center;color:#70839b;font-size:12px;margin:auto;padding:26px 0}
+.message{display:flex;gap:10px;max-width:95%;animation:appear .25s ease}
+.message.user{align-self:flex-start;flex-direction:row-reverse}
+.message.assistant{align-self:flex-end}
+.msg-avatar{width:31px;height:31px;flex-shrink:0;display:grid;place-items:center;border-radius:11px;background:#153448;color:var(--cyan);font-size:13px}
+.user .msg-avatar{background:#30254b;color:#d5b7ff}
+.bubble{padding:11px 14px;border-radius:15px;background:#121e30;border:1px solid #8dbfe416;font-size:13px;line-height:1.95;overflow-wrap:anywhere}
+.user .bubble{background:#183048;border-color:#57e7ff24}
+.bubble pre{direction:ltr;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;background:#060b13;padding:12px;border-radius:10px;overflow-x:auto}
+.bubble img{max-width:100%;border-radius:12px}
+.bubble a{color:var(--cyan)}
+.activity{display:none;align-items:center;gap:10px;padding:0 18px 12px;color:#8199b4;font-size:10px}
+.activity.show{display:flex}
+.mini-orb{position:relative;width:20px;height:20px;flex-shrink:0;border-radius:50%;border:1px solid #57e7ff75;animation:orb 1.6s ease-in-out infinite}
+.mini-orb:before{content:"";position:absolute;inset:4px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+.mini-orb:after{content:"";position:absolute;inset:-4px;border:1px dashed #a78bfa80;border-radius:50%;animation:spin 3s linear infinite}
+.composer{padding:12px;border-top:1px solid var(--line)}
+.composer textarea{width:100%;resize:vertical;min-height:48px;max-height:150px;color:var(--text);background:transparent;border:0;outline:0;padding:8px 10px;font-size:13px}
+.composer-bottom{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.composer-tools{display:flex;gap:7px;flex-wrap:wrap}
+.send-btn{min-width:88px}
+.hint{font-size:10px;color:#60758e;margin-top:10px;text-align:center}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.card{padding:19px;border:1px solid var(--line);border-radius:19px;background:var(--panel);box-shadow:var(--glow)}
+.card h3{font-size:15px;margin:0 0 6px}
+.card p,.muted{color:var(--muted);font-size:12px;line-height:1.9}
+.field{display:grid;gap:7px;margin:14px 0}
+.field label{font-size:11px;color:#b4c7d9}
+.field input,.field select,.field textarea{
+  width:100%;padding:12px;border:1px solid #7cbdd226;border-radius:12px;
+  color:var(--text);background:#080f1b;min-width:0
+}
+.field input::placeholder,.field textarea::placeholder{color:#52657c}
+.field select option{background:#10192a}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.checkline{display:flex;align-items:center;gap:10px;font-size:12px;color:#bdcfe1;margin:13px 0}
+.checkline input{accent-color:#57e7ff}
+.provider{border:1px solid var(--line);border-radius:15px;padding:13px;margin:12px 0;background:#080f1a}
+.provider-top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.provider-top strong{font-size:12px}
+.badge{font-size:9px;padding:4px 7px;border-radius:7px;background:#183c36;color:var(--green)}
+.badge.off{background:#342432;color:#ff9bb0}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.notice{border:1px solid #e6b35d33;background:#382c161f;border-radius:13px;padding:12px;color:#d8bd8a;font-size:11px;line-height:1.9}
+.footer{text-align:center;color:#50657c;font-size:9px;padding:24px 0 5px}
+.hidden{display:none!important}
+.overlay{position:fixed;inset:0;background:#02050bd9;backdrop-filter:blur(15px);z-index:20;display:grid;place-items:center;padding:18px}
+.login-box{width:min(100%,410px);padding:26px;border:1px solid #57e7ff35;border-radius:24px;background:#0d1524;box-shadow:0 0 80px #1479a51e}
+.login-box h2{letter-spacing:4px;text-align:center}
+.login-box .core-wrap{height:125px}
+.login-box .core{transform:scale(.68)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:40;background:#142438;border:1px solid var(--line);padding:12px 18px;border-radius:13px;font-size:12px;transition:.25s;max-width:90vw}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{50%{opacity:.35;box-shadow:0 0 2px var(--green)}}
+@keyframes orb{50%{transform:scale(.82);filter:hue-rotate(50deg)}}
+@keyframes appear{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:850px){
+ .app{grid-template-columns:1fr}.sidebar{position:fixed;top:0;bottom:0;right:0;width:min(290px,85vw);height:100dvh;transform:translateX(110%);transition:.25s;box-shadow:-20px 0 70px #0009}
+ .sidebar.open{transform:translateX(0)}.main{padding:15px 12px 22px}
+ .core-wrap{height:185px}.messages{max-height:42dvh}
+}
+@media(max-width:560px){
+ .grid,.row2{grid-template-columns:1fr}.hero h2{letter-spacing:5px}.chat-head{padding:12px}
+ .card{padding:15px}.composer{padding:9px}.bubble{font-size:12px}
+ .chip{padding:8px 10px}.topbar{margin-bottom:10px}
+}
+</style>
+</head>
+<body>
+
+<div id="loginOverlay" class="overlay">
+  <div class="login-box">
+    <div class="hero">
+      <div class="core-wrap">
+        <div class="core-ring"></div>
+        <div class="core">
+          <svg viewBox="0 0 100 100" fill="none" aria-hidden="true">
+            <circle cx="50" cy="50" r="39" stroke="#57e7ff" stroke-opacity=".35"/>
+            <circle cx="50" cy="50" r="29" stroke="#57e7ff" stroke-opacity=".8" stroke-dasharray="4 5"/>
+            <path d="M50 22 74 36V64L50 78 26 64V36Z" stroke="#57e7ff" stroke-width="1.4"/>
+            <path d="M50 34 64 42V58L50 66 36 58V42Z" stroke="#a78bfa" stroke-width="1.5"/>
+          </svg>
+          <span class="core-letter">J</span>
+        </div>
+      </div>
+      <div class="eyebrow">PERSONAL INTELLIGENCE SYSTEM</div>
+      <h2>JARVIS</h2>
+      <p>ورود به رابط دستیار هوشمند</p>
+    </div>
+    <form id="loginForm">
+      <div class="field"><label for="loginEmail">ایمیل</label><input id="loginEmail" type="email" required placeholder="name@example.com" autocomplete="email"></div>
+      <button class="btn primary" style="width:100%" type="submit">ورود به رابط آزمایشی ↗</button>
+    </form>
+    <p class="muted">این ورود فعلاً محلی و نمایشی است؛ هنوز احراز هویت امن یا حساب کاربری واقعی متصل نشده است.</p>
+  </div>
+</div>
+
+<div class="app">
+<aside id="sidebar" class="sidebar">
+  <div class="brand"><div class="brand-icon">✧</div><div><h1>JARVIS</h1><small>INTELLIGENCE • 2058</small></div></div>
+  <button id="newChat" class="btn primary">＋ گفت‌وگوی جدید</button>
+  <div class="nav-title">فضای کاری</div>
+  <nav class="nav">
+    <button class="btn active" data-page="chat">◈ &nbsp; دستیار هوشمند</button>
+    <button class="btn" data-page="image">✧ &nbsp; ساخت تصویر</button>
+    <button class="btn" data-page="settings">⚙ &nbsp; تنظیمات هوش مصنوعی</button>
+    <button class="btn" data-page="preferences">☷ &nbsp; شخصیت و صدا</button>
+    <button class="btn" data-page="about">⌘ &nbsp; وضعیت سیستم</button>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="profile"><div class="avatar">J</div><div><strong id="profileEmail">مهمان</strong><small id="profileRole">حساب آزمایشی</small></div></div>
+    <button id="logoutBtn" class="btn">↪ خروج از رابط</button>
+  </div>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <button id="menuBtn" class="btn icon-btn" aria-label="باز کردن منو">☰</button>
+    <div class="status"><span class="status-dot"></span><span id="globalStatus">رابط آماده است</span></div>
+    <div class="top-actions"><button class="btn icon-btn" data-goto="settings" title="تنظیمات">⚙</button></div>
+  </header>
+
+  <section id="page-chat" class="page active">
+    <div class="hero">
+      <div class="eyebrow">PERSONAL AI • SYSTEM ONLINE</div>
+      <div class="core-wrap">
+        <div class="core-ring"></div><div class="core">
+          <svg viewBox="0 0 100 100" fill="none" aria-hidden="true">
+            <circle cx="50" cy="50" r="39" stroke="#57e7ff" stroke-opacity=".35"/>
+            <circle cx="50" cy="50" r="29" stroke="#57e7ff" stroke-opacity=".8" stroke-dasharray="4 5"/>
+            <path d="M50 22 74 36V64L50 78 26 64V36Z" stroke="#57e7ff" stroke-width="1.4"/>
+            <path d="M50 34 64 42V58L50 66 36 58V42Z" stroke="#a78bfa" stroke-width="1.5"/>
+            <circle cx="50" cy="50" r="5" fill="#57e7ff"/>
+          </svg><span class="core-letter">J</span>
+        </div>
+      </div>
+      <h2>J A R V I S</h2>
+      <p>دستیار شخصی هوشمند نسل آینده</p>
+    </div>
+
+    <div class="chips">
+      <button class="chip" data-prompt="خودت را معرفی کن و قابلیت‌هایت را توضیح بده.">✧ معرفی جارویس</button>
+      <button class="chip" data-prompt="برای من یک برنامه ساده برای یادگیری برنامه‌نویسی پیشنهاد بده.">⌘ کمک برنامه‌نویسی</button>
+      <button class="chip" data-prompt="آخرین خبرهای مهم فناوری را با منابع معتبر بررسی کن.">⌕ بررسی خبرها</button>
+      <button class="chip" data-prompt="یک ایده خلاقانه برای ساخت اپ اندرویدی پیشنهاد بده.">◈ ایده‌پردازی</button>
+    </div>
+
+    <div class="chat-panel">
+      <div class="chat-head"><div><strong>گفت‌وگوی هوشمند</strong><br><small id="modelLabel">مدل هنوز تنظیم نشده</small></div><button id="clearChat" class="btn">پاک‌سازی</button></div>
+      <div id="messages" class="messages"><div class="empty">من آماده‌ام. برای شروع پیام بنویس یا یکی از پیشنهادها را انتخاب کن.</div></div>
+      <div id="activity" class="activity"><span class="mini-orb"></span><span id="activityText">در حال آماده‌سازی...</span></div>
+      <div class="composer">
+        <textarea id="prompt" rows="2" placeholder="با جارویس صحبت کن... (Enter برای ارسال)"></textarea>
+        <div class="composer-bottom">
+          <div class="composer-tools">
+            <button id="micBtn" class="btn icon-btn" title="ورودی صوتی">♩</button>
+            <button id="speakToggle" class="btn" title="پخش پاسخ">صدا: روشن</button>
+          </div>
+          <button id="sendBtn" class="btn primary send-btn">ارسال ↗</button>
+        </div>
+      </div>
+    </div>
+    <div class="hint">JARVIS 1.0 • نسخهٔ آزمایشی وب • کنترل گوشی هنوز به اپ اندرویدی نیاز دارد</div>
+  </section>
+
+  <section id="page-image" class="page">
+    <div class="card">
+      <h3>✧ استودیوی تولید تصویر</h3>
+      <p>یک توضیح دقیق بنویس. تولید تصویر فقط زمانی کار می‌کند که سرویس انتخاب‌شده از API تصویر پشتیبانی کند.</p>
+      <div class="field"><label for="imagePrompt">توضیح تصویر</label><textarea id="imagePrompt" rows="4" placeholder="یک رابط هولوگرافیک آینده‌نگر، نور نئون فیروزه‌ای، جزئیات دقیق..."></textarea></div>
+      <div class="field"><label for="imageSize">ابعاد</label><select id="imageSize"><option value="1024x1024">مربع 1024 × 1024</option><option value="1536x1024">افقی 1536 × 1024</option><option value="1024x1536">عمودی 1024 × 1536</option></select></div>
+      <button id="generateImage" class="btn primary">✧ تولید تصویر</button>
+      <div id="imageResult" style="margin-top:18px"></div>
+    </div>
+  </section>
+
+  <section id="page-settings" class="page">
+    <div class="card">
+      <h3>⚙ اتصال سرویس‌های هوش مصنوعی</h3>
+      <p>کلیدها را خودت وارد کن. این نسخه APIهای سازگار با قالب OpenAI Chat Completions را پشتیبانی می‌کند. نشانی و مدل دقیق را از مستندات ارائه‌دهنده بگیر.</p>
+      <div class="notice">امنیت: کلید در مرورگر ذخیره می‌شود و برای درخواست‌ها به سرویس انتخابی ارسال می‌شود. در سایت عمومی، کلید محرمانه یا سازمانی وارد نکن. برای محصول نهایی باید درخواست‌ها از بک‌اند امن عبور کنند.</div>
+      <div class="field"><label for="providerSelect">سرویس فعال</label><select id="providerSelect"></select></div>
+      <div id="providerEditor"></div>
+      <div class="actions">
+        <button id="saveProvider" class="btn primary">ذخیره تنظیمات</button>
+        <button id="testProvider" class="btn">آزمایش اتصال</button>
+        <button id="addProvider" class="btn">＋ افزودن سرویس</button>
+      </div>
+      <div class="field"><label for="fallbackSelect">سرویس پشتیبان</label><select id="fallbackSelect"></select></div>
+      <label class="checkline"><input type="checkbox" id="fallbackEnabled" checked> در صورت خطای سرویس اصلی، سرویس پشتیبان امتحان شود.</label>
+      <p id="providerStatus" class="muted">هنوز سرویسی تنظیم نشده است.</p>
+    </div>
+  </section>
+
+  <section id="page-preferences" class="page">
+    <div class="grid">
+      <div class="card">
+        <h3>شخصیت جارویس</h3><p>سبک پاسخ‌گویی را انتخاب کن.</p>
+        <div class="field"><label for="tone">طرز برخورد</label><select id="tone">
+          <option value="friendly">صمیمی و طبیعی</option><option value="formal">رسمی و حرفه‌ای</option>
+          <option value="energetic">پرانرژی و هیجان‌انگیز</option><option value="concise">کوتاه و مستقیم</option>
+          <option value="technical">فنی و دقیق</option>
+        </select></div>
+        <div class="field"><label for="language">زبان پاسخ</label><select id="language"><option value="fa">فارسی</option><option value="en">English</option><option value="auto">متناسب با پیام</option></select></div>
+        <button id="savePrefs" class="btn primary">ذخیره ترجیحات</button>
+      </div>
+      <div class="card">
+        <h3>صدا و گفتار</h3><p>قابلیت‌های صوتی به پشتیبانی مرورگر و سیستم‌عامل بستگی دارند.</p>
+        <div class="field"><label for="voiceSelect">صدای پاسخ</label><select id="voiceSelect"><option value="">صدای پیش‌فرض مرورگر</option></select></div>
+        <label class="checkline"><input id="autoSpeak" type="checkbox" checked> پاسخ‌ها با صدا خوانده شوند.</label>
+        <button id="testVoice" class="btn">آزمایش صدا</button>
+        <p class="muted">فعال‌سازی مداوم فرمان «هی جارویس» در پس‌زمینه، در نسخهٔ وب تضمین‌شدنی نیست.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="page-about" class="page">
+    <div class="grid">
+      <div class="card"><h3>وضعیت رابط</h3><p id="systemInfo">در حال بررسی...</p></div>
+      <div class="card"><h3>حساب آزمایشی</h3><p id="accountInfo">هنوز وارد نشده‌ای.</p></div>
+      <div class="card"><h3>محدودیت‌های نسخه</h3><p>این سایت به‌تنهایی نمی‌تواند همهٔ اپ‌های گوشی را کنترل کند، پیام‌های خصوصی را بخواند یا ارسال امن پیام را تضمین کند. این قابلیت‌ها نیازمند اپ اندروید، مجوزهای مناسب و گاهی بک‌اند هستند.</p></div>
+      <div class="card"><h3>حریم خصوصی</h3><p>گفت‌وگوها و تنظیمات این نسخه در مرورگر نگهداری می‌شوند. پاک‌کردن داده‌های سایت می‌تواند آن‌ها را حذف کند. کلیدهای API را در دستگاه مشترک ذخیره نکن.</p><button id="clearLocal" class="btn danger">پاک‌کردن تنظیمات محلی</button></div>
+    </div>
+  </section>
+  <footer class="footer">JARVIS • FUTURE INTERFACE / 2058 • BUILT FOR THE NEXT ERA</footer>
+</main>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+const ADMIN_EMAIL = "mhdyk3613@gmail.com";
+const STORE_KEY = "jarvis2058.config.v1";
+const DEFAULTS = {
+  providers: [],
+  activeId: "",
+  fallbackId: "",
+  fallbackEnabled: true,
+  tone: "friendly",
+  language: "fa",
+  autoSpeak: true,
+  speakEnabled: true,
+  email: ""
+};
+
+let config = loadConfig();
+let busy = false;
+let recognition = null;
+let chatHistory = [];
+let toastTimer = null;
+
+function loadConfig(){
+  try {
+    return {...DEFAULTS, ...JSON.parse(localStorage.getItem(STORE_KEY) || "{}")};
+  } catch { return {...DEFAULTS}; }
+}
+function persist(){
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(config)); }
+  catch { notify("ذخیره‌سازی مرورگر در دسترس نیست."); }
+}
+function esc(s=""){
+  return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function notify(text){
+  const el=document.getElementById("toast");
+  el.textContent=text;el.classList.add("show");
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),3000);
+}
+function setActivity(text,on=true){
+  document.getElementById("activityText").textContent=text;
+  document.getElementById("activity").classList.toggle("show",on);
+  document.getElementById("globalStatus").textContent=on?"در حال پردازش":"رابط آماده است";
+}
+function setBusy(value){
+  busy=value;
+  document.getElementById("sendBtn").disabled=value;
+  document.getElementById("generateImage").disabled=value;
+  document.getElementById("sendBtn").textContent=value?"در حال کار…":"ارسال ↗";
+}
+function goPage(name){
+  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id==="page-"+name));
+  document.querySelectorAll("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===name));
+  document.getElementById("sidebar").classList.remove("open");
+  if(name==="settings") renderProviders();
+  if(name==="preferences") renderVoices();
+  if(name==="about") renderSystem();
+}
+document.querySelectorAll("[data-page]").forEach(b=>b.addEventListener("click",()=>goPage(b.dataset.page)));
+document.querySelectorAll("[data-goto]").forEach(b=>b.addEventListener("click",()=>goPage(b.dataset.goto)));
+document.getElementById("menuBtn").addEventListener("click",()=>document.getElementById("sidebar").classList.toggle("open"));
+
+function login(email){
+  config.email=email.trim().toLowerCase();
+  persist();
+  document.getElementById("loginOverlay").classList.add("hidden");
+  document.getElementById("profileEmail").textContent=config.email;
+  document.getElementById("profileRole").textContent=config.email===ADMIN_EMAIL?"ادمین نمایشی":"حساب آزمایشی";
+  document.getElementById("accountInfo").textContent=config.email+"\nنقش در نسخهٔ آزمایشی: "+(config.email===ADMIN_EMAIL?"ادمین نمایشی":"کاربر آزمایشی");
+  notify("وارد رابط آزمایشی شدی.");
+}
+document.getElementById("loginForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const email=document.getElementById("loginEmail").value.trim();
+  if(!email)return;
+  login(email);
+});
+document.getElementById("logoutBtn").addEventListener("click",()=>{
+  config.email="";persist();
+  document.getElementById("loginOverlay").classList.remove("hidden");
+});
+if(config.email){
+  document.getElementById("loginEmail").value=config.email;
+  login(config.email);
+}
+
+function newId(){return "p_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,7)}
+function activeProvider(){return config.providers.find(p=>p.id===config.activeId && p.enabled!==false)}
+function providerById(id){return config.providers.find(p=>p.id===id)}
+function fillProviderSelects(){
+  const main=document.getElementById("providerSelect");
+  const fallback=document.getElementById("fallbackSelect");
+  const options=config.providers.map(p=>`<option value="${esc(p.id)}">${esc(p.name||"سرویس")}</option>`).join("");
+  main.innerHTML=options||'<option value="">ابتدا سرویس اضافه کن</option>';
+  fallback.innerHTML='<option value="">بدون سرویس پشتیبان</option>'+options;
+  main.value=config.activeId;fallback.value=config.fallbackId;
+  document.getElementById("fallbackEnabled").checked=!!config.fallbackEnabled;
+}
+function renderProviders(){
+  fillProviderSelects();
+  const p=providerById(config.activeId);
+  const editor=document.getElementById("providerEditor");
+  if(!p){
+    editor.innerHTML='<p class="muted">برای شروع، روی «افزودن سرویس» بزن و اطلاعات API خودت را وارد کن.</p>';
+    document.getElementById("modelLabel").textContent="مدل هنوز تنظیم نشده";
+    return;
+  }
+  editor.innerHTML=`
+    <div class="provider">
+      <div class="provider-top"><strong>تنظیمات سرویس</strong><span class="badge ${p.key?'':'off'}">${p.key?'کلید وارد شده':'بدون کلید'}</span></div>
+      <div class="field"><label>نام سرویس</label><input id="pName" value="${esc(p.name||"")}" placeholder="Primary AI"></div>
+      <div class="field"><label>نشانی پایه API</label><input id="pBase" value="${esc(p.base||"")}" placeholder="https://api.example.com/v1"></div>
+      <div class="field"><label>مدل چت</label><input id="pModel" value="${esc(p.model||"")}" placeholder="نام دقیق مدل"></div>
+      <div class="field"><label>کلید API</label><input id="pKey" type="password" autocomplete="off" value="${esc(p.key||"")}" placeholder="کلید را اینجا وارد کن"></div>
+      <label class="checkline"><input id="pEnabled" type="checkbox" ${p.enabled!==false?"checked":""}> این سرویس فعال باشد</label>
+      <button id="removeProvider" class="btn danger">حذف این سرویس</button>
+    </div>`;
+  document.getElementById("modelLabel").textContent=p.model?("مدل: "+p.model):"مدل هنوز تنظیم نشده";
+  document.getElementById("removeProvider").onclick=()=>{
+    config.providers=config.providers.filter(x=>x.id!==p.id);
+    if(config.activeId===p.id)config.activeId=config.providers[0]?.id||"";
+    if(config.fallbackId===p.id)config.fallbackId="";
+    persist();renderProviders();notify("سرویس حذف شد.");
+  };
+}
+document.getElementById("providerSelect").addEventListener("change",e=>{
+  config.activeId=e.target.value;persist();renderProviders();
+});
+document.getElementById("fallbackSelect").addEventListener("change",e=>{
+  config.fallbackId=e.target.value;persist();
+});
+document.getElementById("fallbackEnabled").addEventListener("change",e=>{
+  config.fallbackEnabled=e.target.checked;persist();
+});
+document.getElementById("addProvider").addEventListener("click",()=>{
+  const p={id:newId(),name:"سرویس جدید",base:"",model:"",key:"",enabled:true};
+  config.providers.push(p);config.activeId=p.id;
+  persist();renderProviders();notify("سرویس جدید اضافه شد.");
+});
+document.getElementById("saveProvider").addEventListener("click",()=>{
+  const p=providerById(config.activeId);
+  if(!p){notify("ابتدا یک سرویس اضافه کن.");return}
+  p.name=document.getElementById("pName").value.trim();
+  p.base=document.getElementById("pBase").value.trim().replace(/\/+$/,"");
+  p.model=document.getElementById("pModel").value.trim();
+  p.key=document.getElementById("pKey").value.trim();
+  p.enabled=document.getElementById("pEnabled").checked;
+  persist();renderProviders();notify("تنظیمات ذخیره شد.");
+});
+function getProviderFormValues(){
+  const p=providerById(config.activeId);
+  if(!p)return null;
+  return {
+    ...p,
+    name:document.getElementById("pName")?.value.trim()||p.name,
+    base:(document.getElementById("pBase")?.value.trim()||p.base).replace(/\/+$/,""),
+    model:document.getElementById("pModel")?.value.trim()||p.model,
+    key:document.getElementById("pKey")?.value.trim()||p.key,
+    enabled:document.getElementById("pEnabled")?.checked??p.enabled
+  };
+}
+function validateProvider(p){
+  if(!p)return "ابتدا سرویس اضافه کن.";
+  if(!p.base||!p.model||!p.key)return "نشانی API، مدل و کلید را کامل وارد کن.";
+  try {const u=new URL(p.base);if(!["http:","https:"].includes(u.protocol))return "نشانی API معتبر نیست."}
+  catch{return "نشانی API معتبر نیست."}
+  return "";
+}
+function endpoint(p,path){
+  return p.base.replace(/\/+$/,"")+"/"+path.replace(/^\/+/,"");
+}
+async function chatRequest(p,messages){
+  const problem=validateProvider(p);if(problem)throw new Error(problem);
+  const response=await fetch(endpoint(p,"chat/completions"),{
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+p.key},
+    body:JSON.stringify({model:p.model,messages,temperature:0.7,stream:false})
+  });
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(data.error?.message||("خطای API: "+response.status));
+  const answer=data.choices?.[0]?.message?.content;
+  if(typeof answer!=="string"||!answer.trim())throw new Error("پاسخ متنی از سرویس دریافت نشد.");
+  return answer;
+}
+function systemPrompt(){
+  const tones={
+    friendly:"صمیمی، طبیعی و حمایت‌گر باش.",
+    formal:"رسمی، حرفه‌ای و مؤدب باش.",
+    energetic:"پرانرژی، مثبت و خوش‌بیان باش.",
+    concise:"کوتاه، مستقیم و مفید پاسخ بده.",
+    technical:"دقیق، فنی و مرحله‌به‌مرحله پاسخ بده."
+  };
+  return `تو JARVIS هستی، دستیار شخصی هوشمند. ${tones[config.tone]||tones.friendly}
+زبان پاسخ: ${config.language==="fa"?"فارسی":config.language==="en"?"انگلیسی":"متناسب با زبان کاربر"}.
+صادق باش؛ وانمود نکن که اپ گوشی را باز کرده‌ای، پیام خوانده‌ای، وب را جست‌وجو کرده‌ای یا عملی انجام داده‌ای مگر ابزار واقعی آن کار موفق شده باشد. اگر قابلیت یا داده‌ای در دسترس نیست، شفاف بگو. برای کارهای حساس تأیید کاربر را بخواه. کد را در بلوک کد و با توضیح کاربردی ارائه کن.`;
+}
+function renderText(text){
+  let s=esc(text);
+  s=s.replace(/```([\w-]*)\n([\s\S]*?)```/g,(_,lang,code)=>`<pre><code>${code}</code></pre>`);
+  s=s.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>");
+  s=s.replace(/`([^`\n]+)`/g,"<code>$1</code>");
+  s=s.replace(/\n/g,"<br>");
+  return s;
+}
+function addMessage(role,text,html=false){
+  const box=document.getElementById("messages");
+  box.querySelector(".empty")?.remove();
+  const node=document.createElement("div");
+  node.className="message "+(role==="user"?"user":"assistant");
+  const avatar=role==="user"?"M":"✧";
+  const bubble=document.createElement("div");
+  bubble.className="bubble";
+  bubble.innerHTML=html?text:renderText(text);
+  const av=document.createElement("div");av.className="msg-avatar";av.textContent=avatar;
+  node.append(av,bubble);box.append(node);box.scrollTop=box.scrollHeight;
+  return node;
+}
+function userFacingError(err){
+  const msg=String(err?.message||err);
+  if(/Failed to fetch|NetworkError|fetch/i.test(msg))return "ارتباط با API برقرار نشد. نشانی، اتصال اینترنت و محدودیت CORS سرویس را بررسی کن.";
+  return msg;
+}
+async function askJarvis(text){
+  const primary=getProviderFormValues()||activeProvider();
+  if(primary){
+    const saved=providerById(primary.id);
+    if(saved)Object.assign(saved,primary);
+    persist();
+  }
+  const error=validateProvider(primary);
+  if(error){notify(error);goPage("settings");return}
+  const messages=[
+    {role:"system",content:systemPrompt()},
+    ...chatHistory.slice(-16),
+    {role:"user",content:text}
+  ];
+  setBusy(true);setActivity("در حال تحلیل درخواست با مدل هوش مصنوعی…");
+  try{
+    let answer;
+    try{answer=await chatRequest(primary,messages)}
+    catch(firstError){
+      const fallback=config.fallbackEnabled?providerById(config.fallbackId):null;
+      if(!fallback||fallback.id===primary.id)throw firstError;
+      setActivity("سرویس اصلی پاسخ نداد؛ در حال امتحان سرویس پشتیبان…");
+      answer=await chatRequest(fallback,messages);
+      notify("پاسخ از سرویس پشتیبان دریافت شد.");
+    }
+    chatHistory.push({role:"user",content:text},{role:"assistant",content:answer});
+    addMessage("assistant",answer);
+    if(config.speakEnabled&&config.autoSpeak)speak(answer);
+  }catch(err){
+    addMessage("assistant","متأسفانه درخواست انجام نشد.\n\n"+userFacingError(err));
+  }finally{setBusy(false);setActivity("",false)}
+}
+document.getElementById("sendBtn").addEventListener("click",sendPrompt);
+async function sendPrompt(){
+  if(busy)return;
+  const input=document.getElementById("prompt");
+  const text=input.value.trim();if(!text)return;
+  input.value="";addMessage("user",text);await askJarvis(text);
+}
+document.getElementById("prompt").addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendPrompt()}
+});
+document.querySelectorAll("[data-prompt]").forEach(b=>b.addEventListener("click",()=>{
+  document.getElementById("prompt").value=b.dataset.prompt;
+  goPage("chat");document.getElementById("prompt").focus();
+}));
+document.getElementById("newChat").addEventListener("click",()=>{
+  chatHistory=[];document.getElementById("messages").innerHTML='<div class="empty">گفت‌وگوی تازه آماده است. از کجا شروع کنیم؟</div>';
+  goPage("chat");
+});
+document.getElementById("clearChat").addEventListener("click",()=>{
+  chatHistory=[];document.getElementById("messages").innerHTML='<div class="empty">گفت‌وگو پاک شد.</div>';
+});
+
+async function testApi(){
+  const p=getProviderFormValues();
+  const error=validateProvider(p);if(error){notify(error);return}
+  const status=document.getElementById("providerStatus");
+  status.textContent="در حال آزمایش اتصال…";setActivity("در حال بررسی اتصال به سرویس…");
+  try{
+    const result=await chatRequest(p,[{role:"user",content:"Reply with exactly: JARVIS_OK"}]);
+    status.textContent="پاسخ دریافت شد: "+result.slice(0,160);
+    notify("پاسخ از API دریافت شد.");
+  }catch(e){
+    status.textContent="آزمایش ناموفق: "+userFacingError(e);
+  }finally{setActivity("",false)}
+}
+document.getElementById("testProvider").addEventListener("click",testApi);
+
+async function generateImage(){
+  if(busy)return;
+  const prompt=document.getElementById("imagePrompt").value.trim();
+  if(!prompt){notify("توضیح تصویر را بنویس.");return}
+  const p=getProviderFormValues()||activeProvider();
+  const err=validateProvider(p);if(err){notify(err);goPage("settings");return}
+  const result=document.getElementById("imageResult");
+  setBusy(true);setActivity("در حال ارسال درخواست تولید تصویر…");
+  result.innerHTML='<p class="muted">درخواست ارسال شد؛ منتظر پاسخ سرویس هستیم…</p>';
+  try{
+    const response=await fetch(endpoint(p,"images/generations"),{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+p.key},
+      body:JSON.stringify({model:p.model,prompt,size:document.getElementById("imageSize").value,n:1})
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(data.error?.message||("خطای API: "+response.status));
+    const item=data.data?.[0];
+    const url=item?.url;
+    const b64=item?.b64_json;
+    if(!url&&!b64)throw new Error("سرویس پاسخ داد اما تصویر قابل نمایش برنگرداند. ممکن است مدل یا API از تولید تصویر پشتیبانی نکند.");
+    const src=b64?"data:image/png;base64,"+b64:url;
+    result.innerHTML="";
+    const img=document.createElement("img");
+    img.alt="تصویر تولیدشده توسط هوش مصنوعی";img.src=src;
+    img.style.cssText="display:block;max-width:100%;max-height:70vh;border-radius:16px;border:1px solid var(--line)";
+    result.append(img);
+    if(url){
+      const link=document.createElement("a");link.href=url;link.target="_blank";link.rel="noopener noreferrer";
+      link.textContent="بازکردن تصویر";link.style.display="inline-block";link.style.marginTop="12px";
+      result.append(link);
+    }
+  }catch(e){
+    result.textContent="تولید تصویر انجام نشد: "+userFacingError(e);
+  }finally{setBusy(false);setActivity("",false)}
+}
+document.getElementById("generateImage").addEventListener("click",generateImage);
+
+function renderVoices(){
+  const select=document.getElementById("voiceSelect");
+  if(!("speechSynthesis" in window)){select.innerHTML='<option value="">مرورگر از گفتار پشتیبانی نمی‌کند</option>';return}
+  const voices=speechSynthesis.getVoices();
+  const current=select.value;
+  select.innerHTML='<option value="">صدای پیش‌فرض مرورگر</option>';
+  voices.forEach((v,i)=>{
+    const o=document.createElement("option");o.value=String(i);o.textContent=v.name+" ("+v.lang+")";select.append(o);
+  });
+  if(current)select.value=current;
+}
+if("speechSynthesis" in window)speechSynthesis.onvoiceschanged=renderVoices;
+renderVoices();
+function speak(text){
+  if(!("speechSynthesis" in window)){notify("پخش گفتار در این مرورگر پشتیبانی نمی‌شود.");return}
+  speechSynthesis.cancel();
+  const utter=new SpeechSynthesisUtterance(text.slice(0,5000));
+  const idx=document.getElementById("voiceSelect").value;
+  const voices=speechSynthesis.getVoices();
+  if(idx!==""&&voices[Number(idx)])utter.voice=voices[Number(idx)];
+  utter.lang=config.language==="en"?"en-US":"fa-IR";utter.rate=1.02;
+  speechSynthesis.speak(utter);
+}
+document.getElementById("speakToggle").addEventListener("click",()=>{
+  config.speakEnabled=!config.speakEnabled;persist();
+  document.getElementById("speakToggle").textContent=config.speakEnabled?"صدا: روشن":"صدا: خاموش";
+});
+document.getElementById("savePrefs").addEventListener("click",()=>{
+  config.tone=document.getElementById("tone").value;
+  config.language=document.getElementById("language").value;
+  config.autoSpeak=document.getElementById("autoSpeak").checked;
+  persist();notify("ترجیحات ذخیره شد.");
+});
+document.getElementById("tone").value=config.tone;
+document.getElementById("language").value=config.language;
+document.getElementById("autoSpeak").checked=config.autoSpeak;
+document.getElementById("speakToggle").textContent=config.speakEnabled?"صدا: روشن":"صدا: خاموش";
+document.getElementById("testVoice").addEventListener("click",()=>speak("سلام، من جارویس هستم. سیستم صوتی آمادهٔ آزمایش است."));
+
+function startRecognition(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){notify("تشخیص صدا در این مرورگر پشتیبانی نمی‌شود. از ورودی متنی استفاده کن.");return}
+  if(recognition){recognition.stop();recognition=null;return}
+  recognition=new SR();recognition.lang=config.language==="en"?"en-US":"fa-IR";
+  recognition.interimResults=false;recognition.maxAlternatives=1;
+  document.getElementById("micBtn").textContent="◉";
+  setActivity("در حال گوش‌دادن به صدای تو…");
+  recognition.onresult=e=>{
+    document.getElementById("prompt").value=e.results[0][0].transcript;
+    notify("گفتار تشخیص داده شد؛ برای ارسال روی دکمه بزن.");
+  };
+  recognition.onerror=e=>notify("خطای تشخیص صدا: "+e.error);
+  recognition.onend=()=>{
+    recognition=null;document.getElementById("micBtn").textContent="♩";setActivity("",false);
+  };
+  recognition.start();
+}
+document.getElementById("micBtn").addEventListener("click",startRecognition);
+
+function renderSystem(){
+  const secure=window.isSecureContext?"بله":"خیر";
+  document.getElementById("systemInfo").innerHTML=
+    "مرورگر: "+esc(navigator.userAgent)+"<br>اتصال امن: "+secure+
+    "<br>سرویس‌های تعریف‌شده: "+config.providers.length+
+    "<br>سرویس فعال: "+esc(activeProvider()?.name||"تنظیم نشده")+
+    "<br>تشخیص گفتار: "+(("SpeechRecognition" in window||"webkitSpeechRecognition" in window)?"قابل دسترسی":"نامشخص");
+}
+document.getElementById("clearLocal").addEventListener("click",()=>{
+  if(!confirm("تمام تنظیمات محلی، ایمیل نمایشی و کلیدهای ذخیره‌شده پاک شوند؟"))return;
+  localStorage.removeItem(STORE_KEY);location.reload();
+});
+if(!window.isSecureContext && location.hostname!=="localhost"){
+  notify("برای بعضی قابلیت‌های میکروفون، سایت باید روی HTTPS اجرا شود.");
+}
+</script>
+</body>
+</html>
