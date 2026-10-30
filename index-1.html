@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>سینما شبانه</title>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.7.5/dist/socket.io.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0}
+body{font-family:Vazirmatn,Tahoma,sans-serif;background:radial-gradient(circle at 20% 0%,#2a1650,#0b0b1a 60%);color:#eee;min-height:100vh}
+.glass{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:18px;backdrop-filter:blur(14px)}
+button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:9px 16px;color:#fff;background:linear-gradient(135deg,#7c3aed,#ec4899)}
+button.g{background:rgba(255,255,255,.1)}
+input{font:inherit;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;border-radius:12px;padding:10px;width:100%}
+.hide{display:none!important}
+h1{text-align:center;padding:28px 0 6px;font-weight:800;font-size:28px}
+.sub{text-align:center;opacity:.6;margin-bottom:22px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;max-width:760px;margin:auto;padding:16px}
+.card{padding:20px 10px;text-align:center;cursor:pointer;transition:.25s}
+.card:hover{transform:translateY(-4px);background:rgba(255,255,255,.12)}
+.av{width:64px;height:64px;border-radius:50%;margin:0 auto 10px;background:linear-gradient(135deg,#7c3aed,#ec4899);display:grid;place-items:center;font-size:26px;font-weight:800;overflow:hidden;position:relative}
+.av img{width:100%;height:100%;object-fit:cover}
+.av.s{width:32px;height:32px;font-size:14px;margin:0;flex:none}
+.nm{display:flex;align-items:center;justify-content:center;gap:8px;font-weight:600}
+.dot{width:12px;height:12px;border-radius:50%;flex:none;position:relative}
+.dot.on{background:radial-gradient(circle at 35% 30%,#bbf7d0,#22c55e 55%,#15803d);box-shadow:0 0 8px #22c55e;animation:pulse 1.8s infinite}
+.dot.off{background:radial-gradient(circle at 35% 30%,#fecaca,#ef4444 55%,#7f1d1d);box-shadow:0 0 5px rgba(239,68,68,.5);opacity:.75}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.8),0 0 8px #22c55e}70%{box-shadow:0 0 0 11px rgba(34,197,94,0),0 0 12px #22c55e}100%{box-shadow:0 0 0 0 rgba(34,197,94,0),0 0 8px #22c55e}}
+#app{max-width:1200px;margin:auto;padding:12px}
+.top{display:flex;gap:10px;align-items:center;padding:10px 14px;margin-bottom:12px;flex-wrap:wrap}
+.top .who{display:flex;gap:14px;flex:1;flex-wrap:wrap}
+.who span{display:flex;align-items:center;gap:6px;font-size:14px}
+.grid{display:grid;grid-template-columns:1fr 340px;gap:12px}
+@media(max-width:850px){.grid{grid-template-columns:1fr}}
+#stage{position:relative;background:#000;border-radius:18px;overflow:hidden;aspect-ratio:16/9}
+#stage:fullscreen{border-radius:0;aspect-ratio:auto}
+video{width:100%;height:100%;background:#000}
+#fsb{position:absolute;top:10px;left:10px;opacity:.8;padding:6px 10px}
+#toasts{position:absolute;bottom:70px;right:14px;display:flex;flex-direction:column;gap:6px;align-items:flex-end;pointer-events:none;max-width:320px}
+.toast{background:rgba(0,0,0,.65);padding:8px 12px;border-radius:12px;font-size:14px;animation:in .3s}
+@keyframes in{from{opacity:0;transform:translateY(10px)}}
+#chat{display:flex;flex-direction:column;height:480px;padding:12px}
+#msgs{flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;margin-bottom:10px}
+.m{display:flex;gap:8px}
+.m b{font-size:12px;opacity:.7;display:block}
+.m div div{background:rgba(255,255,255,.1);padding:7px 11px;border-radius:12px;word-break:break-word}
+.row{display:flex;gap:8px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:grid;place-items:center;z-index:9;padding:16px}
+.modal .glass{background:#1a1230;padding:20px;width:100%;max-width:400px;display:flex;flex-direction:column;gap:10px}
+.mv{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.1);font-size:14px}
+progress{width:100%}
+</style>
+</head>
+<body>
+<div id="login">
+  <h1>🎬 سینما شبانه</h1>
+  <div class="sub">اسمت رو انتخاب کن</div>
+  <div class="cards" id="cards"></div>
+</div>
+
+<div id="app" class="hide">
+  <div class="glass top">
+    <div class="who" id="who"></div>
+    <button class="g" id="adminB" onclick="openStore()">🗄 انبار</button>
+    <button class="g" onclick="openProfile()">👤 پروفایل</button>
+  </div>
+  <div class="grid">
+    <div id="stage">
+      <video id="v" playsinline controlsList="nofullscreen" controls></video>
+      <button class="g" id="fsb" onclick="fs()">⛶</button>
+      <div id="toasts"></div>
+    </div>
+    <div class="glass" id="chat">
+      <div id="msgs"></div>
+      <div class="row"><input id="ci" placeholder="پیام..." onkeydown="if(event.key==='Enter')send()"><button onclick="send()">➤</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal hide" id="pw"><div class="glass"><b>رمز مهدی</b><input id="pwi" type="password" onkeydown="if(event.key==='Enter')goPw()"><button onclick="goPw()">ورود</button><button class="g" onclick="pw.classList.add('hide')">بستن</button></div></div>
+
+<div class="modal hide" id="pf"><div class="glass"><b>پروفایل</b>
+  <input id="pname" maxlength="20" placeholder="نام">
+  <input id="pfile" type="file" accept="image/*">
+  <button onclick="saveProfile()">ذخیره</button><button class="g" onclick="pf.classList.add('hide')">بستن</button></div></div>
+
+<div class="modal hide" id="st"><div class="glass"><b>🗄 انبار فیلم</b>
+  <input id="mfile" type="file" accept="video/*"><button onclick="upload()">آپلود</button>
+  <progress id="prog" value="0" max="100" class="hide"></progress>
+  <div id="list"></div><button class="g" onclick="st.classList.add('hide')">بستن</button></div></div>
+
+<script>
+const SERVER="https://YOUR-SERVICE.up.railway.app"; // آدرس Railway
+const IDS=["mahdi","mahna","fateme","amirali","rastin"];
+const $=id=>document.getElementById(id);
+let me=null,token=null,pass=null,profiles={},onl={},S=null,off=0,lock=0,cur=null;
+const v=$("v");
+const sock=io(SERVER,{transports:["websocket"]});
+
+function av(u,cls=""){const p=profiles[u]||{name:"?",avatar:""};
+  return `<div class="av ${cls}">${p.avatar?`<img src="${p.avatar}">`:p.name[0]}</div>`}
+function dot(u){return `<span class="dot ${onl[u]>0?"on":"off"}"></span>`}
+function render(){
+  $("cards").innerHTML=IDS.map(u=>`<div class="card glass" onclick="pick('${u}')">${av(u)}<div class="nm">${dot(u)}${profiles[u]?.name||""}</div></div>`).join("");
+  $("who").innerHTML=IDS.map(u=>`<span>${dot(u)}${profiles[u]?.name||""}</span>`).join("");
+}
+function pick(u){ if(u==="mahdi"){pw.classList.remove("hide");$("pwi").focus();pending=u}else join(u,null)}
+let pending=null;
+function goPw(){join("mahdi",$("pwi").value)}
+function join(u,p){pass=p;pending=u;sock.emit("join",{uid:u,password:p})}
+
+sock.on("presence",d=>{onl=d;render()});
+sock.on("profiles",d=>{profiles=d;render()});
+sock.on("join_error",()=>alert("رمز اشتباهه"));
+sock.on("joined",d=>{me=d.uid;token=d.token;pw.classList.add("hide");
+  $("login").classList.add("hide");$("app").classList.remove("hide");
+  $("adminB").classList.toggle("hide",me!=="mahdi");$("msgs").innerHTML="";});
+sock.on("history",h=>h.forEach(addMsg));
+sock.on("connect",()=>{tsync();if(me)join(me,pass)});
+setInterval(()=>sock.connected&&tsync(),10000);
+function tsync(){const t0=Date.now();sock.emit("tsync",s=>{off=s-(t0+Date.now())/2})}
+
+// ---- sync ----
+sock.on("state",s=>{S=s;if(s.movie!==cur){cur=s.movie;lock=Date.now()+1000;
+  if(s.movie){v.src=SERVER+"/movies/"+encodeURIComponent(s.movie)}else v.removeAttribute("src")}});
+function target(){return S.pos+(S.playing?(Date.now()+off-S.at)/1000:0)}
+setInterval(()=>{
+  if(!S||!S.movie||v.readyState<1)return;
+  const t=target(),d=v.currentTime-t;
+  if(S.playing&&v.paused){lock=Date.now()+700;v.play().catch(()=>{})}
+  if(!S.playing&&!v.paused){lock=Date.now()+700;v.pause()}
+  if(Math.abs(d)>1.5||(!S.playing&&Math.abs(d)>.3)){lock=Date.now()+700;v.currentTime=t;v.playbackRate=1}
+  else if(S.playing&&Math.abs(d)>.2)v.playbackRate=d>0?.94:1.06;
+  else v.playbackRate=1;
+},400);
+function ctl(a){if(Date.now()<lock||!me)return;sock.emit("control",{action:a,pos:v.currentTime})}
+v.addEventListener("play",()=>ctl("play"));
+v.addEventListener("pause",()=>ctl("pause"));
+v.addEventListener("seeked",()=>ctl("seek"));
+
+// ---- chat ----
+function addMsg(m){
+  const p=profiles[m.uid]||{name:"?"};
+  const el=document.createElement("div");el.className="m";
+  el.innerHTML=av(m.uid,"s")+"<div><b></b><div></div></div>";
+  el.querySelector("b").textContent=p.name;el.querySelector("div div").textContent=m.text;
+  $("msgs").appendChild(el);$("msgs").scrollTop=1e9;
+  if(document.fullscreenElement){const t=document.createElement("div");t.className="toast";
+    t.textContent=p.name+": "+m.text;$("toasts").appendChild(t);setTimeout(()=>t.remove(),6000)}
+}
+sock.on("chat",addMsg);
+function send(){const t=$("ci").value.trim();if(t){sock.emit("chat",{text:t});$("ci").value=""}}
+function fs(){document.fullscreenElement?document.exitFullscreen():$("stage").requestFullscreen()}
+
+// ---- profile ----
+function openProfile(){$("pname").value=profiles[me].name;pf.classList.remove("hide")}
+function saveProfile(){
+  const f=$("pfile").files[0],name=$("pname").value;
+  const done=a=>{sock.emit("profile",a?{name,avatar:a}:{name});pf.classList.add("hide")};
+  if(!f)return done();
+  const img=new Image();img.onload=()=>{const c=document.createElement("canvas");c.width=c.height=128;
+    const s=Math.min(img.width,img.height);
+    c.getContext("2d").drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,128,128);
+    done(c.toDataURL("image/jpeg",.8))};
+  img.src=URL.createObjectURL(f);
+}
+
+// ---- storage (admin) ----
+async function openStore(){st.classList.remove("hide");loadList()}
+async function loadList(){
+  const l=await (await fetch(SERVER+"/movies")).json();
+  $("list").innerHTML=l.map(m=>`<div class="mv"><span>${m.name} (${(m.size/1048576).toFixed(0)}MB)</span><span><button onclick="selMovie(decodeURIComponent('${encodeURIComponent(m.name)}'))">انتخاب</button> <button class="g" onclick="del(decodeURIComponent('${encodeURIComponent(m.name)}'))">🗑</button></span></div>`).join("")||"خالیه";
+}
+function selMovie(n){sock.emit("select_movie",{name:n,token});st.classList.add("hide")}
+async function del(n){if(confirm("حذف بشه؟")){await fetch(SERVER+"/movies/"+encodeURIComponent(n),{method:"DELETE",headers:{"X-Token":token}});loadList()}}
+function upload(){
+  const f=$("mfile").files[0];if(!f)return;
+  const fd=new FormData();fd.append("file",f);
+  const x=new XMLHttpRequest();x.open("POST",SERVER+"/upload");x.setRequestHeader("X-Token",token);
+  $("prog").classList.remove("hide");
+  x.upload.onprogress=e=>$("prog").value=e.loaded/e.total*100;
+  x.onload=()=>{$("prog").classList.add("hide");loadList()};
+  x.send(fd);
+}
+</script>
+</body>
+</html>
